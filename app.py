@@ -3,30 +3,29 @@ import streamlit as st
 # ตั้งค่าหน้าเว็บ
 st.set_page_config(page_title="PEWS Calculator", page_icon="🏥", layout="centered")
 
-# CSS สำหรับปรับแต่งปุ่มประมวลผล (สีส้ม ตัวหนา) และปุ่ม Reset (สีน้ำตาลอ่อน ตัวหนา)
+# CSS สำหรับปรับแต่งปุ่มประมวลผล (สีแสด ตัวหนา) และปุ่ม Reset (สีชมพู ตัวหนา)
 st.markdown("""
     <style>
-    /* ปุ่มประมวลผล: สีส้ม ตัวหนา */
+    /* ปุ่มประมวลผล: สีแสด (Dark Orange) ตัวหนา */
     div.stButton > button[kind="primary"] {
-        background-color: #ff9800 !important;
+        background-color: #ff6f00 !important;
         color: white !important;
         font-weight: bold !important;
         border: none !important;
     }
     div.stButton > button[kind="primary"]:hover {
-        background-color: #e68a00 !important;
+        background-color: #e65100 !important;
     }
     
-    /* ปุ่ม Reset: สีน้ำตาลอ่อน ตัวหนา */
+    /* ปุ่ม Reset: สีชมพู (Pink) ตัวหนา */
     div.stButton > button:not([kind="primary"]) {
-        background-color: #d7ccc8 !important;
-        color: #3e2723 !important;
+        background-color: #ff80ab !important;
+        color: #ffffff !important;
         font-weight: bold !important;
-        border: 1px solid #bcaaa4 !important;
+        border: none !important;
     }
     div.stButton > button:not([kind="primary"]):hover {
-        background-color: #bcaaa4 !important;
-        color: #261a17 !important;
+        background-color: #ff4081 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -35,7 +34,7 @@ st.title("🏥 ระบบประมวลผลคะแนน PEWS")
 st.write("กรอกข้อมูลสัญญาณชีพด้านล่างเพื่อประเมินคะแนนตามเกณฑ์อายุและแสดงผลลัพธ์")
 st.divider()
 
-# ฟังก์ชันสำหรับรีเซ็ตค่าใน session_state
+# ฟังก์ชันสำหรับรีเซ็ตค่าใน session_state ให้กลับเป็นค่าเริ่มต้นทั้งหมด
 def reset_form():
     st.session_state.age_group = None
     st.session_state.bt_val = None
@@ -43,7 +42,7 @@ def reset_form():
     st.session_state.rr_val = None
     st.session_state.crt_val = None
 
-# กำหนดค่าเริ่มต้นใน session_state ให้เป็นค่าว่าง / None
+# กำหนดค่าเริ่มต้นใน session_state
 if 'age_group' not in st.session_state:
     st.session_state.age_group = None
 if 'bt_val' not in st.session_state:
@@ -87,7 +86,7 @@ with col2:
     crt = st.number_input("Capillary Refill Time (CRT - วินาที)", value=st.session_state.crt_val, step=0.1, placeholder="กรอกค่า CRT...", key='crt_val')
 
 
-# ฟังก์ชันแสดงผลแถบสีและตัวเลข (แสดงเฉพาะค่าตัวเลขตามเงื่อนไข: 0=เขียว, 1=เหลือง, 3=แดง)
+# ฟังก์ชันแสดงผลแถบสีและตัวเลข (แสดงเฉพาะค่าตัวเลข: 0=เขียว, 1=เหลือง, 3=แดง)
 def get_badge(score):
     if score == 0:
         return '<span style="background-color: #28a745; color: white; padding: 3px 10px; border-radius: 4px; font-weight: bold;">0</span>'
@@ -180,7 +179,7 @@ def calc_crt(val):
     else: return 3
 
 
-# ปุ่มกดประมวลผล (สีส้ม ตัวหนา) และ ปุ่ม Reset (สีน้ำตาลอ่อน ตัวหนา)
+# ปุ่มกดประมวลผล (สีแสด ตัวหนา) และ ปุ่ม Reset (สีชมพู ตัวหนา)
 btn_col1, btn_col2 = st.columns(2)
 with btn_col1:
     process_clicked = st.button("ประมวลผล", type="primary", use_container_width=True)
@@ -209,7 +208,7 @@ if process_clicked:
         st.divider()
         st.markdown(f"### 🎯 คะแนนรวมทั้งหมด: **{total_score} คะแนน**")
 
-        # แสดงผลสรุปตามคะแนนรวมและเงื่อนไขสี (รวมอยู่ในบรรทัดเดียวไม่ให้ตัดบรรทัดผิดพลาด)
+        # แสดงผลสรุปตามคะแนนรวมและเงื่อนไขสี
         if total_score >= 7:
             st.markdown('<div style="background-color: #dc3545; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🚨 แถบสีแดง: แจ้งเตือนและประเมินใน 15 นาที</div>', unsafe_allow_html=True)
         elif total_score <= 4:
