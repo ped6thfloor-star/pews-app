@@ -3,17 +3,28 @@ import streamlit as st
 # ตั้งค่าหน้าเว็บ
 st.set_page_config(page_title="PEWS Calculator", page_icon="🏥", layout="centered")
 
-# CSS สำหรับปรับแต่งปุ่ม Reset สีน้ำตาลอ่อน ตัวหนา และจัดรูปแบบแถบสี
+# CSS สำหรับปรับแต่งปุ่มประมวลผล (สีส้ม ตัวหนา) และปุ่ม Reset (สีน้ำตาลอ่อน ตัวหนา)
 st.markdown("""
     <style>
-    /* สไตล์ปุ่ม Reset สีน้ำตาลอ่อน ตัวหนา */
-    div.stButton > button:first-child {
+    /* ปุ่มประมวลผล: สีส้ม ตัวหนา */
+    div.stButton > button[kind="primary"] {
+        background-color: #ff9800 !important;
+        color: white !important;
+        font-weight: bold !important;
+        border: none !important;
+    }
+    div.stButton > button[kind="primary"]:hover {
+        background-color: #e68a00 !important;
+    }
+    
+    /* ปุ่ม Reset: สีน้ำตาลอ่อน ตัวหนา */
+    div.stButton > button:not([kind="primary"]) {
         background-color: #d7ccc8 !important;
         color: #3e2723 !important;
         font-weight: bold !important;
         border: 1px solid #bcaaa4 !important;
     }
-    div.stButton > button:first-child:hover {
+    div.stButton > button:not([kind="primary"]):hover {
         background-color: #bcaaa4 !important;
         color: #261a17 !important;
     }
@@ -26,15 +37,15 @@ st.divider()
 
 # ฟังก์ชันสำหรับรีเซ็ตค่าใน session_state
 def reset_form():
-    st.session_state.age_group = "น้อยกว่า 4 เดือน"
+    st.session_state.age_group = None
     st.session_state.bt_val = None
     st.session_state.hr_val = None
     st.session_state.rr_val = None
     st.session_state.crt_val = None
 
-# กำหนดค่าเริ่มต้นใน session_state
+# กำหนดค่าเริ่มต้นใน session_state ให้เป็นค่าว่าง / None
 if 'age_group' not in st.session_state:
-    st.session_state.age_group = "น้อยกว่า 4 เดือน"
+    st.session_state.age_group = None
 if 'bt_val' not in st.session_state:
     st.session_state.bt_val = None
 if 'hr_val' not in st.session_state:
@@ -44,18 +55,28 @@ if 'rr_val' not in st.session_state:
 if 'crt_val' not in st.session_state:
     st.session_state.crt_val = None
 
-# 1. เลือกช่วงอายุ
+# 1. เลือกช่วงอายุ (มี placeholder "กดเลือก อายุ")
+age_options = [
+    "น้อยกว่า 4 เดือน",
+    "4 เดือน - 2 ปี",
+    "2 ปี - 5 ปี",
+    "5 ปี - 12 ปี",
+    "มากกว่า 12 ปี"
+]
+
+# ใช้ index=None เพื่อให้แสดง placeholder เป็นค่าเริ่มต้น
+current_index = age_options.index(st.session_state.age_group) if st.session_state.age_group in age_options else None
+
 age_group = st.selectbox(
     "เลือกช่วงอายุ:",
-    [
-        "น้อยกว่า 4 เดือน",
-        "4 เดือน - 2 ปี",
-        "2 ปี - 5 ปี",
-        "5 ปี - 12 ปี",
-        "มากกว่า 12 ปี",
-    ],
-    key='age_group'
+    options=age_options,
+    index=current_index,
+    placeholder="กดเลือก อายุ",
+    key='age_group_select'
 )
+# อัปเดตค่าลง session_state
+if age_group:
+    st.session_state.age_group = age_group
 
 # ช่องกรอกข้อมูลสัญญาณชีพ (ค่าเริ่มต้นเป็นช่องว่าง/None)
 col1, col2 = st.columns(2)
@@ -67,14 +88,14 @@ with col2:
     crt = st.number_input("Capillary Refill Time (CRT - วินาที)", value=st.session_state.crt_val, step=0.1, placeholder="กรอกค่า CRT...", key='crt_val')
 
 
-# ฟังก์ชันแสดงผลแถบสีและตัวเลขรายหัวข้อ (0=เขียว, 1=เหลือง, 3=แดง)
+# ฟังก์ชันแสดงผลแถบสีและตัวเลข (แสดงเฉพาะค่าตัวเลขตามเงื่อนไข: 0=เขียว, 1=เหลือง, 3=แดง)
 def get_badge(score):
     if score == 0:
-        return '<span style="background-color: #28a745; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold;">0 (สีเขียว)</span>'
+        return '<span style="background-color: #28a745; color: white; padding: 3px 10px; border-radius: 4px; font-weight: bold;">0</span>'
     elif score == 1:
-        return '<span style="background-color: #ffc107; color: black; padding: 4px 10px; border-radius: 4px; font-weight: bold;">1 (สีเหลือง)</span>'
+        return '<span style="background-color: #ffc107; color: black; padding: 3px 10px; border-radius: 4px; font-weight: bold;">1</span>'
     else:
-        return '<span style="background-color: #dc3545; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold;">3 (สีแดง)</span>'
+        return '<span style="background-color: #dc3545; color: white; padding: 3px 10px; border-radius: 4px; font-weight: bold;">3</span>'
 
 
 # เงื่อนไข BT (ทุกช่วงอายุใช้เกณฑ์เดียวกัน)
@@ -90,7 +111,7 @@ def calc_bt(val):
 
 # เงื่อนไข HR ตามช่วงอายุ
 def calc_hr(age, val):
-    if val is None: return 0
+    if val is None or not age: return 0
     if age == "น้อยกว่า 4 เดือน":
         if val < 80: return 3
         elif 80 <= val <= 109: return 1
@@ -125,7 +146,7 @@ def calc_hr(age, val):
 
 # เงื่อนไข RR ตามช่วงอายุ
 def calc_rr(age, val):
-    if val is None: return 0
+    if val is None or not age: return 0
     if age == "น้อยกว่า 4 เดือน":
         if val < 20: return 3
         elif 20 <= val <= 29: return 1
@@ -160,45 +181,41 @@ def calc_crt(val):
     else: return 3
 
 
-# ปุ่มกดประมวลผล และ ปุ่ม Reset (สีน้ำตาลอ่อน ตัวหนา)
+# ปุ่มกดประมวลผล (สีส้ม ตัวหนา) และ ปุ่ม Reset (สีน้ำตาลอ่อน ตัวหนา)
 btn_col1, btn_col2 = st.columns(2)
 with btn_col1:
-    process_clicked = st.button("ประมวลผลคะแนน", type="primary", use_container_width=True)
+    process_clicked = st.button("ประมวลผล", type="primary", use_container_width=True)
 with btn_col2:
     st.button("Reset", on_click=reset_form, use_container_width=True)
 
 if process_clicked:
-    score_bt = calc_bt(bt)
-    score_hr = calc_hr(age_group, hr)
-    score_rr = calc_rr(age_group, rr)
-    score_crt = calc_crt(crt)
+    if not st.session_state.get('age_group'):
+        st.warning("กรุณาเลือกช่วงอายุก่อนทำการประมวลผล")
+    else:
+        score_bt = calc_bt(bt)
+        score_hr = calc_hr(st.session_state.age_group, hr)
+        score_rr = calc_rr(st.session_state.age_group, rr)
+        score_crt = calc_crt(crt)
 
-    total_score = score_bt + score_hr + score_rr + score_crt
+        total_score = score_bt + score_hr + score_rr + score_crt
 
-    st.subheader("📊 ผลการประมวลผลรายหัวข้อ")
-    st.markdown(f"""
-    - **อุณหภูมิร่างกาย (BT):** {bt if bt is not None else '-'} °C $\rightarrow$ {get_badge(score_bt)}
-    - **อัตราการเต้นของหัวใจ (HR):** {hr if hr is not None else '-'} ครั้ง/นาที $\rightarrow$ {get_badge(score_hr)}
-    - **อัตราการหายใจ (RR):** {rr if rr is not None else '-'} ครั้ง/นาที $\rightarrow$ {get_badge(score_rr)}
-    - **Capillary Refill Time (CRT):** {crt if crt is not None else '-'} วินาที $\rightarrow$ {get_badge(score_crt)}
-    """, unsafe_allow_html=True)
+        st.subheader("📊 ผลการประมวลผลรายหัวข้อ")
+        st.markdown(f"""
+        - **อุณหภูมิร่างกาย (BT):** {bt if bt is not None else '-'} °C $\rightarrow$ {get_badge(score_bt)}
+        - **อัตราการเต้นของหัวใจ (HR):** {hr if hr is not None else '-'} ครั้ง/นาที $\rightarrow$ {get_badge(score_hr)}
+        - **อัตราการหายใจ (RR):** {rr if rr is not None else '-'} ครั้ง/นาที $\rightarrow$ {get_badge(score_rr)}
+        - **Capillary Refill Time (CRT):** {crt if crt is not None else '-'} วินาที $\rightarrow$ {get_badge(score_crt)}
+        """, unsafe_allow_html=True)
 
-    st.divider()
-    st.markdown(f"### 🎯 คะแนนรวมทั้งหมด: **{total_score} คะแนน**")
+        st.divider()
+        st.markdown(f"### 🎯 คะแนนรวมทั้งหมด: **{total_score} คะแนน**")
 
-    # แสดงผลสรุปตามคะแนนรวมและเงื่อนไขสี
-    if total_score >= 7:
-        st.markdown(
-            '<div style="background-color: #dc3545; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🚨 แถบสีแดง: แจ้งเตือนและประเมินใน 15 นาที</div>',
-            unsafe_allow_html=True
-        )
-    elif total_score <= 4:
-        st.markdown(
-            '<div style="background-color: #28a745; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🟢 แถบสีเขียว: เฝ้าระวังและติดตามตามปกติ</div>',
-            unsafe_allow_html=True
-        )
-    else:  # ช่วงคะแนน 5 - 6 (ตรงกับเงื่อนไข <= 6)
-        st.markdown(
-            '<div style="background-color: #ffc107; color: black; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🟡 แถบสีเหลือง: แจ้งเตือนและประเมินใน 30 นาที</div>',
-            unsafe_allow_html=True
-        )
+        # แสดงผลสรุปตามคะแนนรวมและเงื่อนไขสี
+        if total_score >= 7:
+            st.markdown(
+                '<div style="background-color: #dc3545; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🚨 แถบสีแดง: แจ้งเตือนและประเมินใน 15 นาที</div>',
+                unsafe_allow_html=True
+            )
+        elif total_score <= 4:
+            st.markdown(
+                '<div style="background-color: #28a745; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🟢 แถบสีเขียว: เฝ้าระวังและติดตามตามปกติ
