@@ -1,9 +1,24 @@
 import streamlit as st
 
 # ตั้งค่าหน้าเว็บ
-st.set_page_config(
-    page_title="PEWS Calculator", page_icon="🏥", layout="centered"
-)
+st.set_page_config(page_title="PEWS Calculator", page_icon="🏥", layout="centered")
+
+# CSS สำหรับปรับแต่งปุ่ม Reset สีน้ำตาลอ่อน ตัวหนา และจัดรูปแบบแถบสี
+st.markdown("""
+    <style>
+    /* สไตล์ปุ่ม Reset สีน้ำตาลอ่อน ตัวหนา */
+    div.stButton > button:first-child {
+        background-color: #d7ccc8 !important;
+        color: #3e2723 !important;
+        font-weight: bold !important;
+        border: 1px solid #bcaaa4 !important;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #bcaaa4 !important;
+        color: #261a17 !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 st.title("🏥 ระบบประมวลผลคะแนน PEWS")
 st.write("กรอกข้อมูลสัญญาณชีพด้านล่างเพื่อประเมินคะแนนตามเกณฑ์อายุและแสดงผลลัพธ์")
@@ -52,7 +67,7 @@ with col2:
     crt = st.number_input("Capillary Refill Time (CRT - วินาที)", value=st.session_state.crt_val, step=0.1, placeholder="กรอกค่า CRT...", key='crt_val')
 
 
-# ฟังก์ชันแสดงผลป้ายกำกับสีสำหรับแต่ละหัวข้อ
+# ฟังก์ชันแสดงผลแถบสีและตัวเลขรายหัวข้อ (0=เขียว, 1=เหลือง, 3=แดง)
 def get_badge(score):
     if score == 0:
         return '<span style="background-color: #28a745; color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold;">0 (สีเขียว)</span>'
@@ -145,12 +160,12 @@ def calc_crt(val):
     else: return 3
 
 
-# ปุ่มกดประมวลผล และ ปุ่ม Reset
+# ปุ่มกดประมวลผล และ ปุ่ม Reset (สีน้ำตาลอ่อน ตัวหนา)
 btn_col1, btn_col2 = st.columns(2)
 with btn_col1:
     process_clicked = st.button("ประมวลผลคะแนน", type="primary", use_container_width=True)
 with btn_col2:
-    st.button("Reset (ล้างค่า)", on_click=reset_form, use_container_width=True)
+    st.button("Reset", on_click=reset_form, use_container_width=True)
 
 if process_clicked:
     score_bt = calc_bt(bt)
@@ -171,7 +186,7 @@ if process_clicked:
     st.divider()
     st.markdown(f"### 🎯 คะแนนรวมทั้งหมด: **{total_score} คะแนน**")
 
-    # แสดงผลสรุปตามคะแนนรวม
+    # แสดงผลสรุปตามคะแนนรวมและเงื่อนไขสี
     if total_score >= 7:
         st.markdown(
             '<div style="background-color: #dc3545; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🚨 แถบสีแดง: แจ้งเตือนและประเมินใน 15 นาที</div>',
@@ -182,7 +197,7 @@ if process_clicked:
             '<div style="background-color: #28a745; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🟢 แถบสีเขียว: เฝ้าระวังและติดตามตามปกติ</div>',
             unsafe_allow_html=True
         )
-    else:  # คะแนนอยู่ช่วง 5 - 6 (เทียบตามเกณฑ์ <= 6)
+    else:  # ช่วงคะแนน 5 - 6 (ตรงกับเงื่อนไข <= 6)
         st.markdown(
             '<div style="background-color: #ffc107; color: black; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🟡 แถบสีเหลือง: แจ้งเตือนและประเมินใน 30 นาที</div>',
             unsafe_allow_html=True
