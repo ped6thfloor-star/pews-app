@@ -34,56 +34,31 @@ st.title("🏥 ระบบประมวลผลคะแนน PEWS")
 st.write("กรอกข้อมูลสัญญาณชีพด้านล่างเพื่อประเมินคะแนนตามเกณฑ์อายุและแสดงผลลัพธ์")
 st.divider()
 
-# ฟังก์ชันสำหรับรีเซ็ตค่าทั้งหมดใน session_state ให้กลับเป็นค่าเริ่มต้น
-def reset_form():
-    st.session_state.age_group = None
-    st.session_state.bt_val = None
-    st.session_state.hr_val = None
-    st.session_state.rr_val = None
-    st.session_state.crt_val = None
-
 # กำหนดค่าเริ่มต้นใน session_state
-if 'age_group' not in st.session_state:
-    st.session_state.age_group = None
-if 'bt_val' not in st.session_state:
-    st.session_state.bt_val = None
-if 'hr_val' not in st.session_state:
-    st.session_state.hr_val = None
-if 'rr_val' not in st.session_state:
-    st.session_state.rr_val = None
-if 'crt_val' not in st.session_state:
-    st.session_state.crt_val = None
+if 'form_key' not in st.session_state:
+    st.session_state.form_key = 0
 
-# 1. เลือกช่วงอายุ (ใช้ placeholder "กดเลือก อายุ")
-age_options = [
-    "น้อยกว่า 4 เดือน",
-    "4 เดือน - 2 ปี",
-    "2 ปี - 5 ปี",
-    "5 ปี - 12 ปี",
-    "มากกว่า 12 ปี"
-]
+# ฟังก์ชันสำหรับรีเซ็ตค่าทั้งหมด
+def reset_form():
+    st.session_state.form_key += 1
 
-current_index = age_options.index(st.session_state.age_group) if st.session_state.age_group in age_options else None
-
+# ดึงค่าจาก widget โดยใช้ key ที่ผูกกับ form_key เพื่อให้รีเซ็ตค่าได้สมบูรณ์
 age_group = st.selectbox(
     "เลือกช่วงอายุ:",
-    options=age_options,
-    index=current_index,
+    options=["น้อยกว่า 4 เดือน", "4 เดือน - 2 ปี", "2 ปี - 5 ปี", "5 ปี - 12 ปี", "มากกว่า 12 ปี"],
+    index=None,
     placeholder="กดเลือก อายุ",
-    key='age_group_select'
+    key=f"age_group_{st.session_state.form_key}"
 )
-
-if age_group:
-    st.session_state.age_group = age_group
 
 # ช่องกรอกข้อมูลสัญญาณชีพ (ค่าเริ่มต้นเป็นช่องว่าง)
 col1, col2 = st.columns(2)
 with col1:
-    bt = st.number_input("อุณหภูมิร่างกาย (BT - °C)", value=st.session_state.bt_val, step=0.1, placeholder="กรอกค่า BT...", key='bt_val')
-    hr = st.number_input("อัตราการเต้นของหัวใจ (HR - ครั้ง/นาที)", value=st.session_state.hr_val, step=1, placeholder="กรอกค่า HR...", key='hr_val')
+    bt = st.number_input("อุณหภูมิร่างกาย (BT - °C)", value=None, step=0.1, placeholder="กรอกค่า BT...", key=f"bt_{st.session_state.form_key}")
+    hr = st.number_input("อัตราการเต้นของหัวใจ (HR - ครั้ง/นาที)", value=None, step=1, placeholder="กรอกค่า HR...", key=f"hr_{st.session_state.form_key}")
 with col2:
-    rr = st.number_input("อัตราการหายใจ (RR - ครั้ง/นาที)", value=st.session_state.rr_val, step=1, placeholder="กรอกค่า RR...", key='rr_val')
-    crt = st.number_input("Capillary Refill Time (CRT - วินาที)", value=st.session_state.crt_val, step=0.1, placeholder="กรอกค่า CRT...", key='crt_val')
+    rr = st.number_input("อัตราการหายใจ (RR - ครั้ง/นาที)", value=None, step=1, placeholder="กรอกค่า RR...", key=f"rr_{st.session_state.form_key}")
+    crt = st.number_input("Capillary Refill Time (CRT - วินาที)", value=None, step=0.1, placeholder="กรอกค่า CRT...", key=f"crt_{st.session_state.form_key}")
 
 
 # ฟังก์ชันแสดงผลตัวเลขรายหัวข้อพร้อมแถบสี (0=เขียว, 1=เหลือง, 3=แดง)
@@ -187,12 +162,12 @@ with btn_col2:
     st.button("Reset", on_click=reset_form, use_container_width=True)
 
 if process_clicked:
-    if not st.session_state.get('age_group'):
+    if not age_group:
         st.warning("กรุณาเลือกช่วงอายุก่อนทำการประมวลผล")
     else:
         score_bt = calc_bt(bt)
-        score_hr = calc_hr(st.session_state.age_group, hr)
-        score_rr = calc_rr(st.session_state.age_group, rr)
+        score_hr = calc_hr(age_group, hr)
+        score_rr = calc_rr(age_group, rr)
         score_crt = calc_crt(crt)
 
         total_score = score_bt + score_hr + score_rr + score_crt
@@ -208,10 +183,10 @@ if process_clicked:
         st.divider()
         st.markdown(f"### 🎯 คะแนนรวมทั้งหมด: **{total_score} คะแนน**")
 
-        # แสดงผลสรุปคำเตือนและแถบสีตามคะแนนรวม
+        # แสดงผลสรุปคำเตือนและแถบสีตามคะแนนรวม (ตัดคำว่า "แถบสี" ออกแล้ว)
         if total_score >= 7:
-            st.markdown('<div style="background-color: #dc3545; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🚨 แถบสีแดง: แจ้งเตือนและประเมินใน 15 นาที</div>', unsafe_allow_html=True)
+            st.markdown('<div style="background-color: #dc3545; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🚨 สีแดง: แจ้งเตือนและประเมินใน 15 นาที</div>', unsafe_allow_html=True)
         elif total_score <= 4:
-            st.markdown('<div style="background-color: #28a745; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🟢 แถบสีเขียว: เฝ้าระวังและติดตามตามปกติ</div>', unsafe_allow_html=True)
+            st.markdown('<div style="background-color: #28a745; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🟢 สีเขียว: เฝ้าระวังและติดตามตามปกติ</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div style="background-color: #ffc107; color: black; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🟡 แถบสีเหลือง: แจ้งเตือนและประเมินใน 30 นาที</div>', unsafe_allow_html=True)
+            st.markdown('<div style="background-color: #ffc107; color: black; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🟡 สีเหลือง: แจ้งเตือนและประเมินใน 30 นาที</div>', unsafe_allow_html=True)
