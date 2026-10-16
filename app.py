@@ -64,7 +64,6 @@ age_options = [
     "มากกว่า 12 ปี"
 ]
 
-# ใช้ index=None เพื่อให้แสดง placeholder เป็นค่าเริ่มต้น
 current_index = age_options.index(st.session_state.age_group) if st.session_state.age_group in age_options else None
 
 age_group = st.selectbox(
@@ -74,7 +73,7 @@ age_group = st.selectbox(
     placeholder="กดเลือก อายุ",
     key='age_group_select'
 )
-# อัปเดตค่าลง session_state
+
 if age_group:
     st.session_state.age_group = age_group
 
@@ -136,7 +135,7 @@ def calc_hr(age, val):
         elif 70 <= val <= 119: return 0
         elif 120 <= val <= 150: return 1
         else: return 3
-    else:  # มากกว่า 12 ปี
+    else:
         if val < 60: return 3
         elif 60 <= val <= 69: return 1
         elif 70 <= val <= 99: return 0
@@ -165,7 +164,7 @@ def calc_rr(age, val):
         elif 20 <= val <= 29: return 0
         elif 30 <= val <= 45: return 1
         else: return 3
-    else:  # มากกว่า 12 ปี
+    else:
         if val < 10: return 3
         elif 10 <= val <= 15: return 1
         elif 15 <= val <= 25: return 0
@@ -173,7 +172,7 @@ def calc_rr(age, val):
         else: return 3
 
 
-# เงื่อนไข CRT (รับค่าเป็นตัวเลขวินาที)
+# เงื่อนไข CRT
 def calc_crt(val):
     if val is None: return 0
     if val <= 2: return 0
@@ -210,12 +209,10 @@ if process_clicked:
         st.divider()
         st.markdown(f"### 🎯 คะแนนรวมทั้งหมด: **{total_score} คะแนน**")
 
-        # แสดงผลสรุปตามคะแนนรวมและเงื่อนไขสี
+        # แสดงผลสรุปตามคะแนนรวมและเงื่อนไขสี (รวมอยู่ในบรรทัดเดียวไม่ให้ตัดบรรทัดผิดพลาด)
         if total_score >= 7:
-            st.markdown(
-                '<div style="background-color: #dc3545; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🚨 แถบสีแดง: แจ้งเตือนและประเมินใน 15 นาที</div>',
-                unsafe_allow_html=True
-            )
+            st.markdown('<div style="background-color: #dc3545; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🚨 แถบสีแดง: แจ้งเตือนและประเมินใน 15 นาที</div>', unsafe_allow_html=True)
         elif total_score <= 4:
-            st.markdown(
-                '<div style="background-color: #28a745; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🟢 แถบสีเขียว: เฝ้าระวังและติดตามตามปกติ
+            st.markdown('<div style="background-color: #28a745; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🟢 แถบสีเขียว: เฝ้าระวังและติดตามตามปกติ</div>', unsafe_allow_html=True)
+        else:
+            st.markdown('<div style="background-color: #ffc107; color: black; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🟡 แถบสีเหลือง: แจ้งเตือนและประเมินใน 30 นาที</div>', unsafe_allow_html=True)
