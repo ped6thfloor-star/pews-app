@@ -6,7 +6,7 @@ st.set_page_config(page_title="PEWS Calculator", page_icon="🏥", layout="cente
 # CSS สำหรับปรับแต่งปุ่มประมวลผล (สีแสด ตัวหนา) และปุ่ม Reset (สีชมพู ตัวหนา)
 st.markdown("""
     <style>
-    /* ปุ่มประมวลผล: สีแสด (Dark Orange) ตัวหนา */
+    /* ปุ่มประมวลผล: สีแสด ตัวหนา */
     div.stButton > button[kind="primary"] {
         background-color: #ff6f00 !important;
         color: white !important;
@@ -17,7 +17,7 @@ st.markdown("""
         background-color: #e65100 !important;
     }
     
-    /* ปุ่ม Reset: สีชมพู (Pink) ตัวหนา */
+    /* ปุ่ม Reset: สีชมพู ตัวหนา */
     div.stButton > button:not([kind="primary"]) {
         background-color: #ff80ab !important;
         color: #ffffff !important;
@@ -34,7 +34,7 @@ st.title("🏥 ระบบประมวลผลคะแนน PEWS")
 st.write("กรอกข้อมูลสัญญาณชีพด้านล่างเพื่อประเมินคะแนนตามเกณฑ์อายุและแสดงผลลัพธ์")
 st.divider()
 
-# ฟังก์ชันสำหรับรีเซ็ตค่าใน session_state ให้กลับเป็นค่าเริ่มต้นทั้งหมด
+# ฟังก์ชันสำหรับรีเซ็ตค่าทั้งหมดใน session_state ให้กลับเป็นค่าเริ่มต้น
 def reset_form():
     st.session_state.age_group = None
     st.session_state.bt_val = None
@@ -54,7 +54,7 @@ if 'rr_val' not in st.session_state:
 if 'crt_val' not in st.session_state:
     st.session_state.crt_val = None
 
-# 1. เลือกช่วงอายุ (มี placeholder "กดเลือก อายุ")
+# 1. เลือกช่วงอายุ (ใช้ placeholder "กดเลือก อายุ")
 age_options = [
     "น้อยกว่า 4 เดือน",
     "4 เดือน - 2 ปี",
@@ -76,7 +76,7 @@ age_group = st.selectbox(
 if age_group:
     st.session_state.age_group = age_group
 
-# ช่องกรอกข้อมูลสัญญาณชีพ (ค่าเริ่มต้นเป็นช่องว่าง/None)
+# ช่องกรอกข้อมูลสัญญาณชีพ (ค่าเริ่มต้นเป็นช่องว่าง)
 col1, col2 = st.columns(2)
 with col1:
     bt = st.number_input("อุณหภูมิร่างกาย (BT - °C)", value=st.session_state.bt_val, step=0.1, placeholder="กรอกค่า BT...", key='bt_val')
@@ -86,7 +86,7 @@ with col2:
     crt = st.number_input("Capillary Refill Time (CRT - วินาที)", value=st.session_state.crt_val, step=0.1, placeholder="กรอกค่า CRT...", key='crt_val')
 
 
-# ฟังก์ชันแสดงผลแถบสีและตัวเลข (แสดงเฉพาะค่าตัวเลข: 0=เขียว, 1=เหลือง, 3=แดง)
+# ฟังก์ชันแสดงผลตัวเลขรายหัวข้อพร้อมแถบสี (0=เขียว, 1=เหลือง, 3=แดง)
 def get_badge(score):
     if score == 0:
         return '<span style="background-color: #28a745; color: white; padding: 3px 10px; border-radius: 4px; font-weight: bold;">0</span>'
@@ -208,7 +208,7 @@ if process_clicked:
         st.divider()
         st.markdown(f"### 🎯 คะแนนรวมทั้งหมด: **{total_score} คะแนน**")
 
-        # แสดงผลสรุปตามคะแนนรวมและเงื่อนไขสี
+        # แสดงผลสรุปคำเตือนและแถบสีตามคะแนนรวม
         if total_score >= 7:
             st.markdown('<div style="background-color: #dc3545; color: white; padding: 15px; border-radius: 8px; text-align: center; font-size: 20px; font-weight: bold;">🚨 แถบสีแดง: แจ้งเตือนและประเมินใน 15 นาที</div>', unsafe_allow_html=True)
         elif total_score <= 4:
